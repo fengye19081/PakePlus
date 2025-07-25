@@ -1,32 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <link rel="stylesheet" href="styles.css" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus App</title>
-        <script type="module" src="/main.js" defer></script>
-    </head>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码计算器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        neutral: '#1F2937',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg;
+            }
+            .card {
+                @apply bg-white rounded-xl shadow-lg p-6 transition-all duration-300 hover:shadow-xl;
+            }
+            .result-animation {
+                @apply transition-all duration-500 transform;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen font-sans text-neutral">
+    <div class="container mx-auto px-4 py-12 max-w-md">
+        <!-- 标题部分 -->
+        <div class="text-center mb-8">
+            <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-2">密码计算器</h1>
+            <p class="text-gray-600">输入六位数字，快速获取注册密码</p>
+        </div>
 
-    <body>
-        <main class="container">
-            <h1>Welcome to PakePlus</h1>
-            <form class="row" id="greet-form">
-                <input id="inputValue" placeholder="Enter a something..." />
+        <!-- 主卡片 -->
+        <div class="card">
+            <form id="passwordForm" class="space-y-5">
+                <!-- 输入框 -->
+                <div>
+                    <label for="sixDigits" class="block text-sm font-medium text-gray-700 mb-1">六位数字</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-key"></i>
+                        </span>
+                        <input 
+                            type="number" 
+                            id="sixDigits" 
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg input-focus"
+                            placeholder="请输入六位数字"
+                            min="100000" 
+                            max="999999"
+                            required
+                        >
+                    </div>
+                    <p id="inputError" class="mt-1 text-red-500 text-sm hidden">请输入有效的六位数字</p>
+                </div>
+
+                <!-- 计算按钮 -->
+                <button 
+                    type="submit" 
+                    class="w-full btn-primary flex items-center justify-center"
+                >
+                    <i class="fa fa-calculator mr-2"></i>
+                    计算密码
+                </button>
             </form>
-            <div class="resultBox">
-                <span>result: </span>
-                <span id="result"></span>
+
+            <!-- 结果显示 -->
+            <div id="resultContainer" class="mt-6 opacity-0 h-0 overflow-hidden transition-all duration-500">
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">计算结果</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">输入的六位数字:</span>
+                            <span id="displaySixDigits" class="font-medium">--</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-gray-600">中间结果:</span>
+                            <span id="intermediateResult" class="font-medium">--</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-gray-600">计算公式:</span>
+                            <span id="formula" class="font-medium">--</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex items-center">
+                                <span class="text-lg font-medium text-gray-900 mr-2">密码:</span>
+                                <div class="relative flex-1">
+                                    <span id="result" class="text-2xl font-bold text-primary">--</span>
+                                    <button id="copyBtn" class="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-primary transition-colors">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="invokeBox">
-                <button id="openUrl">open_url_browser</button>
-                <button id="openUrlNew">open_url_new</button>
-                <button id="runCommand">run_command</button>
-                <button id="downloadFile">download_file</button>
-                <button id="getExeDir">get_exe_dir</button>
-                <button id="getEnvVar">get_env_var</button>
-                <button id="findPort">find_port</button>
-            </div>
-        </main>
-    </body>
+        </div>
+
+        <!-- 说明卡片 -->
+        <div class="card mt-6 bg-gray-50">
+            <h3 class="text-lg font-medium text-gray-900 mb-2 flex items-center">
+                <i class="fa fa-info-circle text-primary mr-2"></i>
+                计算说明
+            </h3>
+            <p class="text-gray-600">密码计算逻辑：<span class="font-medium">（任意六位数字 + 4685）×74 - 248</span></p>
+        </div>
+    </div>
+
+    <!-- 复制成功提示 -->
+    <div id="copyToast" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-16 opacity-0 transition-all duration-300 flex items-center">
+        <i class="fa fa-check-circle mr-2"></i>
+        <span>已复制到剪贴板</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('passwordForm');
+            const sixDigitsInput = document.getElementById('sixDigits');
+            const inputError = document.getElementById('inputError');
+            const resultContainer = document.getElementById('resultContainer');
+            const displaySixDigits = document.getElementById('displaySixDigits');
+            const intermediateResult = document.getElementById('intermediateResult');
+            const formula = document.getElementById('formula');
+            const result = document.getElementById('result');
+            const copyBtn = document.getElementById('copyBtn');
+            const copyToast = document.getElementById('copyToast');
+
+            // 计算密码
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const inputValue = sixDigitsInput.value.trim();
+
+                // 验证输入是否为六位数字
+                if (!/^\d{6}$/.test(inputValue)) {
+                    inputError.classList.remove('hidden');
+                    return;
+                }
+
+                inputError.classList.add('hidden');
+                
+                // 计算密码
+                const sixDigits = parseInt(inputValue, 10);
+                const step1 = sixDigits + 4685; // 第一步：六位数字 + 4685
+                const step2 = step1 * 74;       // 第二步：结果乘以74
+                const password = step2 - 248;   // 第三步：结果减去248
+                
+                // 显示结果
+                displaySixDigits.textContent = sixDigits;
+                intermediateResult.textContent = `${sixDigits} + 4685 = ${step1}`;
+                formula.textContent = `${step1} × 74 - 248 = ${password}`;
+                result.textContent = password;
+                
+                // 显示结果容器并添加动画
+                resultContainer.style.opacity = '1';
+                resultContainer.style.height = 'auto';
+                resultContainer.style.marginTop = '6rem';
+                
+                // 为结果添加脉冲动画
+                result.classList.add('animate-pulse');
+                setTimeout(() => {
+                    result.classList.remove('animate-pulse');
+                }, 1000);
+                
+                // 平滑滚动到结果
+                resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+
+            // 复制到剪贴板
+            copyBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(result.textContent)
+                    .then(() => {
+                        // 显示复制成功提示
+                        copyToast.style.transform = 'translateY(0)';
+                        copyToast.style.opacity = '1';
+                        
+                        // 3秒后隐藏提示
+                        setTimeout(() => {
+                            copyToast.style.transform = 'translateY(16px)';
+                            copyToast.style.opacity = '0';
+                        }, 3000);
+                    })
+                    .catch(err => {
+                        console.error('复制失败: ', err);
+                    });
+            });
+
+            // 输入验证
+            sixDigitsInput.addEventListener('input', function() {
+                // 限制为6位数字
+                if (this.value.length > 6) {
+                    this.value = this.value.slice(0, 6);
+                }
+                
+                // 移除非数字字符
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        });
+    </script>
+</body>
 </html>
